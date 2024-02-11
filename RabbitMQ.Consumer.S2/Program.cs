@@ -25,11 +25,17 @@ channel.QueueDeclare(queue: "example-queue", exclusive: false,durable:true);
 #region Queuedan Gelen Mesajı Okuma 
 
 EventingBasicConsumer consumer = new(channel);
-channel.BasicConsume(queue: "example-queue", false,consumer);
+channel.BasicConsume(queue: "example-queue", autoAck:false, consumer); //mesajın onaylanma süreci için autoAck:false
+channel.BasicQos(0, 5, false);
 consumer.Received += (sender, e) =>
 {
+
+    Console.WriteLine(Encoding.UTF8.GetString(e.Body.Span) + " işlendi");
+    //consumer mesajı başarılı şekilde işlediğini burada belirtir.
+    // delivery tag her mesaja ait   unique bir değeri temsil eder.
+    //multiple parametresi ise; eğer değer false ise sadece bu tage sahip mesajın işlendiğini true ise bu tage sahip ve bundan önceki tüm mesakların işlenediğini bildirir.
+    channel.BasicAck(e.DeliveryTag, multiple: false);
     
-    Console.WriteLine(Encoding.UTF8.GetString(e.Body.Span)+" işlendi");
 };
 #endregion
 
